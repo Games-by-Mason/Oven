@@ -1,3 +1,3 @@
 # Oven
 
-Bakes assets into their in engine formats.
+Uses the Zig build system to bake assets into their in engine formats.
