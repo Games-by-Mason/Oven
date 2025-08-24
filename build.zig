@@ -1,5 +1,18 @@
 const std = @import("std");
 
+/// Supported asset extensions.
+const Extension = enum {
+    @".png",
+    @".comp.glsl",
+    @".vf.glsl",
+
+    /// Ignored extensions.
+    const ignored: []const []const u8 = &.{
+        // Skip glsl files, they're imported by the shader programs we're actually compiling.
+        "glsl",
+    };
+};
+
 pub fn build(b: *std.Build) void {
     const target = b.standardTargetOptions(.{});
     const optimize = b.standardOptimizeOption(.{});
@@ -16,17 +29,6 @@ pub fn build(b: *std.Build) void {
     });
     b.installArtifact(zex.artifact("zex"));
 }
-
-const Extension = enum {
-    @".png",
-    @".comp.glsl",
-    @".vf.glsl",
-
-    const ignored: []const []const u8 = &.{
-        // Skip glsl files, they're imported by the shader programs we're actually compiling.
-        "glsl",
-    };
-};
 
 /// Options to `bake`.
 pub const BakeOptions = struct {
