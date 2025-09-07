@@ -1,7 +1,7 @@
 .{
-    .name = .Oven,
+    .name = .oven,
     .version = "0.0.0",
-    .fingerprint = 0xcf50289a9b4775,
+    .fingerprint = 0xa0fdff16899f4338,
     .minimum_zig_version = "0.15.1",
     .dependencies = .{
         .shader_compiler = .{
