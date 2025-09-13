@@ -257,7 +257,10 @@ pub const ShaderCompilerOptions = struct {
             // wrong and I don't expect the shaders to be particularly large. I also don't mind sharing the
             // source to them etc, they're easy enough to disassemble regardless.
             .debug_info = true,
-            .optimize_perf = optimize != .Debug,
+            // We enable performance optimizations by default regardless of optimization mode, since
+            // they make a big difference to runtime performance, and shaders tend to compile
+            // quickly regardless.
+            .optimize_perf = true,
             .optimize_size = optimize == .ReleaseSmall,
             .define = .empty,
             .preamble = .empty,
