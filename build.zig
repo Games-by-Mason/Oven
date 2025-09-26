@@ -54,6 +54,16 @@ pub fn bake(
         // Only process files
         if (entry.kind != .file) continue;
 
+        // If any path components start with an underscore, skip them. Really we should just avoid
+        // traversing into directories that start with "_" to begin with, but this method saves us
+        // from having to fork the walker.
+        {
+            var comps = try std.fs.path.componentIterator(entry.path);
+            while (comps.next()) |comp| {
+                if (comp.name[0] == '_') continue :w;
+            }
+        }
+
         // Check the extension
         const ext = b: {
             // Get the extension
@@ -65,6 +75,9 @@ pub fn bake(
                     break :b @field(Extension, field.name);
                 }
             }
+
+            // Skip README files
+            if (std.mem.eql(u8, entry.basename, "README.md")) continue;
 
             // Skip the ZON config files
             {
@@ -97,16 +110,6 @@ pub fn bake(
         // Check that the path only contains valid characters. Since our output paths are based on
         // our input paths, this check is sufficient.
         try checkPath(entry.path);
-
-        // If any path components start with an underscore, skip them. Really we should just avoid
-        // traversing into directories that start with "_" to begin with, but this method saves us
-        // from having to fork the walker.
-        {
-            var comps = try std.fs.path.componentIterator(entry.path);
-            while (comps.next()) |comp| {
-                if (comp.name[0] == '_') continue :w;
-            }
-        }
 
         // Find all config files to apply to this asset, sorted from lowest to highest priority
         const config_paths = c: {
