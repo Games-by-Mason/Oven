@@ -29,7 +29,7 @@ This strategy allows customizing both specific files, and entire subtrees of fil
 
 ## What formats are supported?
 
-Right now conversion from `png` to `ktx2`, and `glsl` to `spv` are supported, and there isn't a way to extend it to new formats without modifying the source.
+Right now conversion from `png` to `ktx2`, and `glsl` to `spv` are supported, and `zon`files are installed as is with no additional validation. There isn't currently a way to extend it to new formats without modifying the source.
 
 You're welcome to use the library as is, or to fork it to add support for the formats you need/remove ones you don't.
 

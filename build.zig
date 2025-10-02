@@ -5,6 +5,7 @@ const Extension = enum {
     @".png",
     @".comp.glsl",
     @".vf.glsl",
+    @".zon",
 
     /// Ignored extensions.
     const ignored: []const []const u8 = &.{
@@ -183,6 +184,14 @@ pub fn bake(
                     .dirname = options.dirname,
                 });
             },
+            .@".zon" => {
+                // Install the ZON file
+                _ = try installZon(b, write_file, .{
+                    .dirname = options.dirname,
+                    .filename = entry.path,
+                    .config = config_paths,
+                });
+            },
         }
     }
 
@@ -347,6 +356,28 @@ pub fn installShader(
     const filename_no_ext = std.fs.path.fmtJoin(&.{ dirname, stemNoExt(program.filename) });
     const filename = b.fmt("{f}.{s}.spv", .{ filename_no_ext, program.stage });
     return write_file.addCopyFile(spv, filename);
+}
+
+pub const ZonOptions = struct {
+    config: std.ArrayList([]const u8),
+    dirname: []const u8,
+    filename: []const u8,
+};
+
+/// Installs a ZON file.
+pub fn installZon(
+    b: *std.Build,
+    write_file: *std.Build.Step.WriteFile,
+    options: ZonOptions,
+) !std.Build.LazyPath {
+    if (options.config.items.len > 0) {
+        std.log.err("{s}: zon doesn't accept zon config", .{options.config.items[0]});
+        return error.UnexpectedConfig;
+    }
+    return write_file.addCopyFile(
+        b.path(b.pathJoin(&.{ options.dirname, options.filename })),
+        options.filename,
+    );
 }
 
 /// Similar to `std.fs.path.stem`, but removes all extensions instead of just the last one.
