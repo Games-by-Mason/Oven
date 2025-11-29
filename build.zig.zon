@@ -9,8 +9,8 @@
             .hash = "shader_compiler-1.1.0-bOVsaim8AADQvFaqHtsqAdbqlNFxHmiITnpSkX5gbzGo",
         },
         .zex = .{
-            .url = "git+https://github.com/Games-By-Mason/Zex#051988d59567a5b55d0f8ee5fabdf30dfa584331",
-            .hash = "zex-0.1.0-BXO6OlBiAwD9EL9zlOZCMGOqa85GAcf4hNAYzFGMxGN3",
+            .url = "git+https://github.com/Games-By-Mason/Zex#ddedc82b1e8505c7ff3c96cc997b461302c15291",
+            .hash = "zex-0.1.0-BXO6OmtfAwDsYxfRLqHiI0avTCVM644uYCzoLY-Flykc",
         },
     },
     .paths = .{
