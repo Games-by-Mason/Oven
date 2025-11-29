@@ -2,15 +2,15 @@
     .name = .oven,
     .version = "0.1.0",
     .fingerprint = 0xa0fdff16899f4338,
-    .minimum_zig_version = "0.15.1",
+    .minimum_zig_version = "0.16.0-dev.1484+d0ba6642b",
     .dependencies = .{
         .shader_compiler = .{
-            .url = "git+https://github.com/Games-By-Mason/shader_compiler#c24b915eb66369b8bd3115a96508ca5c9a445497",
-            .hash = "shader_compiler-1.0.0-bOVsamu9AABT50Nb8bzMJ35nNkcW7u9DTEjtx9Zvfamr",
+            .url = "git+https://github.com/Games-By-Mason/shader_compiler#98c020b0cb5b98a529f8ef9aa95ff1160cd2af51",
+            .hash = "shader_compiler-1.1.0-bOVsaim8AADQvFaqHtsqAdbqlNFxHmiITnpSkX5gbzGo",
         },
         .zex = .{
-            .url = "git+https://github.com/Games-By-Mason/Zex#bed59d8dc46176d8f0286981857bd75fa5f31230",
-            .hash = "zex-0.0.0-BXO6Ou9aAwCmhXVLwBDsVZGbXme55yTXOovo7p_q17yB",
+            .url = "git+https://github.com/Games-By-Mason/Zex#051988d59567a5b55d0f8ee5fabdf30dfa584331",
+            .hash = "zex-0.1.0-BXO6OlBiAwD9EL9zlOZCMGOqa85GAcf4hNAYzFGMxGN3",
         },
     },
     .paths = .{

@@ -59,7 +59,7 @@ pub fn bake(
         // traversing into directories that start with "_" to begin with, but this method saves us
         // from having to fork the walker.
         {
-            var comps = try std.fs.path.componentIterator(entry.path);
+            var comps = std.fs.path.componentIterator(entry.path);
             while (comps.next()) |comp| {
                 if (comp.name[0] == '_') continue :w;
             }
@@ -119,13 +119,13 @@ pub fn bake(
             // Check for config files matching this extension
             {
                 const basename_zon = b.fmt("{t}.zon", .{ext});
-                for (walker.stack.items) |frame| {
+                for (walker.inner.stack.items) |frame| {
                     frame.iter.dir.access(basename_zon, .{}) catch |err| switch (err) {
                         error.FileNotFound => continue,
                         else => return err,
                     };
                     const filename_zon = b.pathJoin(&.{
-                        walker.name_buffer.items[0..frame.dirname_len],
+                        walker.inner.name_buffer.items[0..frame.dirname_len],
                         basename_zon,
                     });
                     try config_paths.append(b.allocator, filename_zon);
@@ -134,14 +134,14 @@ pub fn bake(
 
             // Check if there's a config file matching this file exactly
             b: {
-                const frame = walker.stack.items[walker.stack.items.len - 1];
+                const frame = walker.inner.stack.items[walker.inner.stack.items.len - 1];
                 const basename_zon = b.fmt("{s}.zon", .{entry.basename});
                 frame.iter.dir.access(basename_zon, .{}) catch |err| switch (err) {
                     error.FileNotFound => break :b,
                     else => return err,
                 };
                 const filename_zon = b.pathJoin(&.{
-                    walker.name_buffer.items[0..frame.dirname_len],
+                    walker.inner.name_buffer.items[0..frame.dirname_len],
                     basename_zon,
                 });
                 try config_paths.append(b.allocator, filename_zon);
