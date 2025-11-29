@@ -14,6 +14,10 @@ Furthermore, information is lost when you do this manually--ideally you'd like a
 
 See also [It's Not About The Technology - Game Engines are Art Tools](https://youtu.be/89bLKVvF85M) and the [Zex](https://github.com/Games-by-Mason/Zex) README.
 
+## Which version of Zig is targeted?
+
+See [build.zig.con](/build.zig.zon). For previous Zig versions, see [releases](https://github.com/Games-by-Mason/dear_imgui_zig/releases).
+
 ## How does it work?
 
 Oven recursively walks the given data directory at build time, and discovers all supported assets. A build graph to process the assets is generated using Zig's build system, and then the build system is able to process them all in parallel. If inputs are later modified, the build system is able to detect this and only rebuild the changed assets.
