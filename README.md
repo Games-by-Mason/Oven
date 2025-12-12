@@ -33,7 +33,13 @@ This strategy allows customizing both specific files, and entire subtrees of fil
 
 ## What formats are supported?
 
-Right now conversion from `png` to `ktx2`, and `glsl` to `spv` are supported, and `zon`files are installed as is with no additional validation. There isn't currently a way to extend it to new formats without modifying the source.
+Right now the following bake steps are supported:
+* `png` to `ktx2` using [Zex](https://github.com/games-by-Mason/Zex)
+* `glsl` to `spv` using [shader_compiler](https://github.com/Games-by-Mason/shader_compiler)
+* `.atlas.zon` to `.atlas` and `.ktx2` using [FontAtlas](https://codeberg.org/Games-by-Mason/FontAtlas)
+* `zon` files are installed as is with no additional processing or validation.
+
+There isn't currently a way to extend it to new formats without modifying the source.
 
 You're welcome to use the library as is, or to fork it to add support for the formats you need/remove ones you don't.
 

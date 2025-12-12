@@ -12,6 +12,10 @@
             .url = "git+https://github.com/Games-By-Mason/Zex#ddedc82b1e8505c7ff3c96cc997b461302c15291",
             .hash = "zex-0.1.0-BXO6OmtfAwDsYxfRLqHiI0avTCVM644uYCzoLY-Flykc",
         },
+        .FontAtlas = .{
+            .url = "git+https://codeberg.org/Games-by-Mason/FontAtlas.git#e5f85d7db9ee9529271f29a36dce38e55aa7f882",
+            .hash = "FontAtlas-1.0.0-cL_gCQIYAQBfmlQk36z1QTqbKsYpW4EHuR917aY_Sn9n",
+        },
     },
     .paths = .{
         "build.zig",

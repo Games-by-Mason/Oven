@@ -5,12 +5,15 @@ const Extension = enum {
     @".png",
     @".comp.glsl",
     @".vf.glsl",
+    @".atlas.zon",
     @".zon",
 
     /// Ignored extensions.
     const ignored: []const []const u8 = &.{
         // Skip glsl files, they're imported by the shader programs we're actually compiling.
         "glsl",
+        // Skip ttf files, they're imported by the font atlases we're actually compiling.
+        "ttf",
     };
 };
 
@@ -29,6 +32,12 @@ pub fn build(b: *std.Build) void {
         .optimize = optimize,
     });
     b.installArtifact(zex.artifact("zex"));
+
+    const font_atlas = b.dependency("FontAtlas", .{
+        .target = target,
+        .optimize = optimize,
+    });
+    b.installArtifact(font_atlas.artifact("atlas-compiler"));
 }
 
 /// Options to `bake`.
@@ -153,7 +162,7 @@ pub fn bake(
         switch (ext) {
             .@".png" => {
                 // Install the texture
-                _ = try installTexture(b, dep, write_file, .{
+                _ = installTexture(b, dep, write_file, .{
                     .dirname = options.dirname,
                     .filename = entry.path,
                     .config = config_paths,
@@ -161,7 +170,7 @@ pub fn bake(
             },
             .@".comp.glsl" => {
                 // Install the compute shader
-                _ = try installShader(b, dep, write_file, options.shader_compiler, .{
+                _ = installShader(b, dep, write_file, options.shader_compiler, .{
                     .dirname = options.dirname,
                     .filename = entry.path,
                     .config = config_paths,
@@ -170,13 +179,13 @@ pub fn bake(
             },
             .@".vf.glsl" => {
                 // Install the vertex and fragment shaders
-                _ = try installShader(b, dep, write_file, options.shader_compiler, .{
+                _ = installShader(b, dep, write_file, options.shader_compiler, .{
                     .dirname = options.dirname,
                     .filename = entry.path,
                     .config = config_paths,
                     .stage = "vert",
                 });
-                _ = try installShader(b, dep, write_file, options.shader_compiler, .{
+                _ = installShader(b, dep, write_file, options.shader_compiler, .{
                     .filename = entry.path,
                     .config = config_paths,
                     .stage = "frag",
@@ -185,10 +194,18 @@ pub fn bake(
             },
             .@".zon" => {
                 // Install the ZON file
-                _ = try installZon(b, write_file, .{
+                _ = installZon(b, write_file, .{
                     .dirname = options.dirname,
                     .filename = entry.path,
                     .config = config_paths,
+                });
+            },
+            .@".atlas.zon" => {
+                // Install the font atlas
+                _ = installFontAtlas(b, write_file, .{
+                    .config = config_paths,
+                    .dirname = options.dirname,
+                    .filename = entry.path,
                 });
             },
         }
@@ -209,21 +226,21 @@ pub fn compileTexture(
     b: *std.Build,
     dep: *std.Build.Dependency,
     texture: TextureOptions,
-) !std.Build.LazyPath {
-    const oven = b.addRunArtifact(dep.artifact("zex"));
+) std.Build.LazyPath {
+    const zex = b.addRunArtifact(dep.artifact("zex"));
 
     for (texture.config.items) |path| {
-        oven.addArg("--config");
-        oven.addFileArg(b.path(b.pathJoin(&.{ texture.dirname, path })));
+        zex.addArg("--config");
+        zex.addFileArg(b.path(b.pathJoin(&.{ texture.dirname, path })));
     }
 
-    oven.addArg("--input");
-    oven.addFileArg(b.path(b.pathJoin(&.{ texture.dirname, texture.filename })));
+    zex.addArg("--input");
+    zex.addFileArg(b.path(b.pathJoin(&.{ texture.dirname, texture.filename })));
 
-    oven.addArg("--output");
+    zex.addArg("--output");
     const stem = stemNoExt(texture.filename);
     const basename = b.fmt("{s}.ktx2", .{stem});
-    return oven.addOutputFileArg(basename);
+    return zex.addOutputFileArg(basename);
 }
 
 /// Converts a texture from PNG to KTX2 and installs it.
@@ -232,8 +249,8 @@ pub fn installTexture(
     dep: *std.Build.Dependency,
     write_file: *std.Build.Step.WriteFile,
     texture: TextureOptions,
-) !std.Build.LazyPath {
-    const ktx2 = try compileTexture(b, dep, texture);
+) std.Build.LazyPath {
+    const ktx2 = compileTexture(b, dep, texture);
     const dirname = std.fs.path.dirname(texture.filename) orelse "";
     const filename_no_ext = std.fs.path.fmtJoin(&.{ dirname, stemNoExt(texture.filename) });
     const filename = b.fmt("{f}.ktx2", .{filename_no_ext});
@@ -297,7 +314,7 @@ pub fn compileShader(
     dep: *std.Build.Dependency,
     compiler: ShaderCompilerOptions,
     program: ShaderProgramOptions,
-) !std.Build.LazyPath {
+) std.Build.LazyPath {
     if (program.config.items.len > 0) {
         std.process.fatal("{s}: shaders don't accept zon config", .{program.config.items[0]});
     }
@@ -348,8 +365,8 @@ pub fn installShader(
     write_file: *std.Build.Step.WriteFile,
     compiler: ShaderCompilerOptions,
     program: ShaderProgramOptions,
-) !std.Build.LazyPath {
-    const spv = try compileShader(b, dep, compiler, program);
+) std.Build.LazyPath {
+    const spv = compileShader(b, dep, compiler, program);
     const dirname = std.fs.path.dirname(program.filename) orelse "";
     const filename_no_ext = std.fs.path.fmtJoin(&.{ dirname, stemNoExt(program.filename) });
     const filename = b.fmt("{f}.{s}.spv", .{ filename_no_ext, program.stage });
@@ -367,7 +384,7 @@ pub fn installZon(
     b: *std.Build,
     write_file: *std.Build.Step.WriteFile,
     options: ZonOptions,
-) !std.Build.LazyPath {
+) std.Build.LazyPath {
     if (options.config.items.len > 0) {
         std.process.fatal("{s}: zon doesn't accept zon config", .{options.config.items[0]});
     }
@@ -375,6 +392,50 @@ pub fn installZon(
         b.path(b.pathJoin(&.{ options.dirname, options.filename })),
         options.filename,
     );
+}
+
+pub const InstallFontAtlasOptions = struct {
+    config: std.ArrayList([]const u8),
+    dirname: []const u8,
+    filename: []const u8,
+};
+
+/// Installs a font atlas.
+pub fn installFontAtlas(
+    b: *std.Build,
+    write_file: *std.Build.Step.WriteFile,
+    options: InstallFontAtlasOptions,
+) struct { std.Build.LazyPath, std.Build.LazyPath } {
+    if (options.config.items.len > 0) {
+        std.process.fatal(
+            "{s}: font atlases don't accept additional zon config",
+            .{options.config.items[0]},
+        );
+    }
+
+    const dirname = std.fs.path.dirname(options.filename) orelse "";
+    const filename_no_ext = std.fs.path.fmtJoin(&.{ dirname, stemNoExt(options.filename) });
+
+    const atlas_compiler = b.dependency("FontAtlas", .{}).artifact("atlas-compiler");
+    const compile_atlas = b.addRunArtifact(atlas_compiler);
+
+    compile_atlas.addArg("--config-path");
+    compile_atlas.addFileArg(b.path(b.pathJoin(&.{ options.dirname, options.filename })));
+
+    compile_atlas.addArg("--write-deps");
+    _ = compile_atlas.addDepFileOutputArg("deps.d");
+
+    compile_atlas.addArg("--output-metadata-path");
+    const metadata_filename = b.fmt("{f}.atlas", .{filename_no_ext});
+    const metadata = compile_atlas.addOutputFileArg(metadata_filename);
+    const write_metadata = write_file.addCopyFile(metadata, metadata_filename);
+
+    compile_atlas.addArg("--output-atlas-path");
+    const atlas_filename = b.fmt("{f}.atlas.ktx2", .{filename_no_ext});
+    const atlas = compile_atlas.addOutputFileArg(atlas_filename);
+    const write_atlas = write_file.addCopyFile(atlas, atlas_filename);
+
+    return .{ write_metadata, write_atlas };
 }
 
 /// Similar to `std.fs.path.stem`, but removes all extensions instead of just the last one.
