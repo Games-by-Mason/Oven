@@ -101,16 +101,15 @@ pub fn bake(
             }
 
             // The extension is not supported, fail
-            std.log.err("{s}: cannot bake unsupported extension \"{s}\"", .{
+            std.process.fatal("{s}: cannot bake unsupported extension \"{s}\"", .{
                 entry.path,
                 ext,
             });
-            return error.UnsupportedExtension;
         };
 
         // Check that the path only contains valid characters. Since our output paths are based on
         // our input paths, this check is sufficient.
-        try checkPath(entry.path);
+        checkPath(entry.path);
 
         // Find all config files to apply to this asset, sorted from lowest to highest priority
         const config_paths = c: {
@@ -300,8 +299,7 @@ pub fn compileShader(
     program: ShaderProgramOptions,
 ) !std.Build.LazyPath {
     if (program.config.items.len > 0) {
-        std.log.err("{s}: shaders don't accept zon config", .{program.config.items[0]});
-        return error.UnexpectedConfig;
+        std.process.fatal("{s}: shaders don't accept zon config", .{program.config.items[0]});
     }
 
     const compile = b.addRunArtifact(dep.artifact("shader_compiler"));
@@ -371,8 +369,7 @@ pub fn installZon(
     options: ZonOptions,
 ) !std.Build.LazyPath {
     if (options.config.items.len > 0) {
-        std.log.err("{s}: zon doesn't accept zon config", .{options.config.items[0]});
-        return error.UnexpectedConfig;
+        std.process.fatal("{s}: zon doesn't accept zon config", .{options.config.items[0]});
     }
     return write_file.addCopyFile(
         b.path(b.pathJoin(&.{ options.dirname, options.filename })),
@@ -418,28 +415,25 @@ pub fn extensions(path: []const u8) []const u8 {
 /// Just say no.
 ///
 /// (...we also reject spaces and stuff because it makes it easier to escape dep files.)
-pub fn checkPath(path: []const u8) !void {
+pub fn checkPath(path: []const u8) void {
     var lastWasSep = false;
     for (path) |char| {
         switch (char) {
             std.fs.path.sep => if (lastWasSep) {
-                std.log.err("{s} contains illegal substring: \"{}{}\"", .{
+                std.process.fatal("{s} contains illegal substring: \"{}{}\"", .{
                     path,
                     std.fs.path.sep,
                     std.fs.path.sep,
                 });
-                return error.InvalidPath;
             } else {
                 lastWasSep = true;
             },
             'a'...'z', '-', '_', '0'...'9', '.' => lastWasSep = false,
             'A'...'Z' => {
-                std.log.err("{s}: path contains upper case characters", .{path});
-                return error.InvalidPath;
+                std.process.fatal("{s}: path contains upper case characters", .{path});
             },
             else => {
-                std.log.err("{s}: path contains illegal character: '{c}'", .{ path, char });
-                return error.InvalidPath;
+                std.process.fatal("{s}: path contains illegal character: '{c}'", .{ path, char });
             },
         }
     }
