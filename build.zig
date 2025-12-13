@@ -1,5 +1,8 @@
 const std = @import("std");
 
+const Build = std.Build;
+const LazyPath = Build.LazyPath;
+
 /// Supported asset extensions.
 const Extension = enum {
     @".png",
@@ -17,7 +20,7 @@ const Extension = enum {
     };
 };
 
-pub fn build(b: *std.Build) void {
+pub fn build(b: *Build) void {
     const target = b.standardTargetOptions(.{});
     const optimize = b.standardOptimizeOption(.{});
 
@@ -44,15 +47,15 @@ pub fn build(b: *std.Build) void {
 pub const BakeOptions = struct {
     dirname: []const u8,
     shader_compiler: ShaderCompilerOptions,
-    ttfs: ?std.Build.LazyPath,
+    ttfs: ?LazyPath,
 };
 
 /// Bakes the assets in a given directory.
 pub fn bake(
-    b: *std.Build,
-    dep: *std.Build.Dependency,
+    b: *Build,
+    dep: *Build.Dependency,
     options: BakeOptions,
-) !*std.Build.Step.WriteFile {
+) !*Build.Step.WriteFile {
     const write_file = b.addWriteFiles();
 
     var dir = try std.fs.cwd().openDir(options.dirname, .{ .iterate = true });
@@ -225,10 +228,10 @@ pub const TextureOptions = struct {
 
 /// Converts a texture from PNG to KTX2.
 pub fn compileTexture(
-    b: *std.Build,
-    dep: *std.Build.Dependency,
+    b: *Build,
+    dep: *Build.Dependency,
     texture: TextureOptions,
-) std.Build.LazyPath {
+) LazyPath {
     const zex = b.addRunArtifact(dep.artifact("zex"));
 
     for (texture.config.items) |path| {
@@ -247,11 +250,11 @@ pub fn compileTexture(
 
 /// Converts a texture from PNG to KTX2 and installs it.
 pub fn installTexture(
-    b: *std.Build,
-    dep: *std.Build.Dependency,
-    write_file: *std.Build.Step.WriteFile,
+    b: *Build,
+    dep: *Build.Dependency,
+    write_file: *Build.Step.WriteFile,
     texture: TextureOptions,
-) std.Build.LazyPath {
+) LazyPath {
     const ktx2 = compileTexture(b, dep, texture);
     const dirname = std.fs.path.dirname(texture.filename) orelse "";
     const filename_no_ext = std.fs.path.fmtJoin(&.{ dirname, stemNoExt(texture.filename) });
@@ -276,10 +279,10 @@ pub const ShaderCompilerOptions = struct {
     optimize_perf: bool,
     optimize_size: bool,
     define: std.ArrayList([]const u8),
-    preamble: std.ArrayList(std.Build.LazyPath),
-    include: std.ArrayList(std.Build.LazyPath),
+    preamble: std.ArrayList(LazyPath),
+    include: std.ArrayList(LazyPath),
 
-    pub fn init(b: *std.Build, optimize: std.builtin.OptimizeMode) !@This() {
+    pub fn init(b: *Build, optimize: std.builtin.OptimizeMode) !@This() {
         var result: @This() = .{
             .default_version = "460",
             .target = "Vulkan-1.3",
@@ -312,11 +315,11 @@ pub const ShaderCompilerOptions = struct {
 
 /// Compiles a SPIRV shader.
 pub fn compileShader(
-    b: *std.Build,
-    dep: *std.Build.Dependency,
+    b: *Build,
+    dep: *Build.Dependency,
     compiler: ShaderCompilerOptions,
     program: ShaderProgramOptions,
-) std.Build.LazyPath {
+) LazyPath {
     if (program.config.items.len > 0) {
         std.process.fatal("{s}: shaders don't accept zon config", .{program.config.items[0]});
     }
@@ -362,12 +365,12 @@ pub fn compileShader(
 
 /// Compiles and installs a SPIRV shader.
 pub fn installShader(
-    b: *std.Build,
-    dep: *std.Build.Dependency,
-    write_file: *std.Build.Step.WriteFile,
+    b: *Build,
+    dep: *Build.Dependency,
+    write_file: *Build.Step.WriteFile,
     compiler: ShaderCompilerOptions,
     program: ShaderProgramOptions,
-) std.Build.LazyPath {
+) LazyPath {
     const spv = compileShader(b, dep, compiler, program);
     const dirname = std.fs.path.dirname(program.filename) orelse "";
     const filename_no_ext = std.fs.path.fmtJoin(&.{ dirname, stemNoExt(program.filename) });
@@ -383,10 +386,10 @@ pub const ZonOptions = struct {
 
 /// Installs a ZON file.
 pub fn installZon(
-    b: *std.Build,
-    write_file: *std.Build.Step.WriteFile,
+    b: *Build,
+    write_file: *Build.Step.WriteFile,
     options: ZonOptions,
-) std.Build.LazyPath {
+) LazyPath {
     if (options.config.items.len > 0) {
         std.process.fatal("{s}: zon doesn't accept zon config", .{options.config.items[0]});
     }
@@ -400,15 +403,15 @@ pub const InstallFontAtlasOptions = struct {
     config: std.ArrayList([]const u8),
     dirname: []const u8,
     filename: []const u8,
-    ttfs: ?std.Build.LazyPath,
+    ttfs: ?LazyPath,
 };
 
 /// Installs a font atlas.
 pub fn installFontAtlas(
-    b: *std.Build,
-    write_file: *std.Build.Step.WriteFile,
+    b: *Build,
+    write_file: *Build.Step.WriteFile,
     options: InstallFontAtlasOptions,
-) struct { std.Build.LazyPath, std.Build.LazyPath } {
+) struct { LazyPath, LazyPath } {
     if (options.config.items.len > 0) {
         std.process.fatal(
             "{s}: font atlases don't accept additional zon config",
