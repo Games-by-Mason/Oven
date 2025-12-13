@@ -37,13 +37,14 @@ pub fn build(b: *std.Build) void {
         .target = target,
         .optimize = optimize,
     });
-    b.installArtifact(font_atlas.artifact("atlas-compiler"));
+    b.installArtifact(font_atlas.artifact("compile-atlas"));
 }
 
 /// Options to `bake`.
 pub const BakeOptions = struct {
     dirname: []const u8,
     shader_compiler: ShaderCompilerOptions,
+    ttfs: ?std.Build.LazyPath,
 };
 
 /// Bakes the assets in a given directory.
@@ -206,6 +207,7 @@ pub fn bake(
                     .config = config_paths,
                     .dirname = options.dirname,
                     .filename = entry.path,
+                    .ttfs = options.ttfs,
                 });
             },
         }
@@ -398,6 +400,7 @@ pub const InstallFontAtlasOptions = struct {
     config: std.ArrayList([]const u8),
     dirname: []const u8,
     filename: []const u8,
+    ttfs: ?std.Build.LazyPath,
 };
 
 /// Installs a font atlas.
@@ -416,8 +419,8 @@ pub fn installFontAtlas(
     const dirname = std.fs.path.dirname(options.filename) orelse "";
     const filename_no_ext = std.fs.path.fmtJoin(&.{ dirname, stemNoExt(options.filename) });
 
-    const atlas_compiler = b.dependency("FontAtlas", .{}).artifact("atlas-compiler");
-    const compile_atlas = b.addRunArtifact(atlas_compiler);
+    const compile_atlas_exe = b.dependency("FontAtlas", .{}).artifact("compile-atlas");
+    const compile_atlas = b.addRunArtifact(compile_atlas_exe);
 
     compile_atlas.addArg("--config-path");
     compile_atlas.addFileArg(b.path(b.pathJoin(&.{ options.dirname, options.filename })));
@@ -434,6 +437,11 @@ pub fn installFontAtlas(
     const atlas_filename = b.fmt("{f}.atlas.ktx2", .{filename_no_ext});
     const atlas = compile_atlas.addOutputFileArg(atlas_filename);
     const write_atlas = write_file.addCopyFile(atlas, atlas_filename);
+
+    if (options.ttfs) |ttfs| {
+        compile_atlas.addArg("--ttf-dir");
+        compile_atlas.addDirectoryArg(ttfs);
+    }
 
     return .{ write_metadata, write_atlas };
 }

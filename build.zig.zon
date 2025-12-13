@@ -13,8 +13,8 @@
             .hash = "zex-0.1.0-BXO6OmtfAwDsYxfRLqHiI0avTCVM644uYCzoLY-Flykc",
         },
         .FontAtlas = .{
-            .url = "git+https://codeberg.org/Games-by-Mason/FontAtlas.git#e5f85d7db9ee9529271f29a36dce38e55aa7f882",
-            .hash = "FontAtlas-1.0.0-cL_gCQIYAQBfmlQk36z1QTqbKsYpW4EHuR917aY_Sn9n",
+            .url = "git+https://codeberg.org/Games-by-Mason/FontAtlas.git#d3ff49aaa749609895f195d5d3d6c6f937563240",
+            .hash = "FontAtlas-1.0.0-cL_gCfIXAQAD-CXHnNYmu4tRqNKGrdcmCSt_9XaEmmyl",
         },
     },
     .paths = .{
