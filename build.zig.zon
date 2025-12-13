@@ -5,12 +5,12 @@
     .minimum_zig_version = "0.16.0-dev.1484+d0ba6642b",
     .dependencies = .{
         .shader_compiler = .{
-            .url = "git+https://github.com/Games-By-Mason/shader_compiler#98c020b0cb5b98a529f8ef9aa95ff1160cd2af51",
-            .hash = "shader_compiler-1.1.0-bOVsaim8AADQvFaqHtsqAdbqlNFxHmiITnpSkX5gbzGo",
+            .url = "git+https://github.com/Games-by-Mason/shader_compiler#ccaaa68eabec16d7c1e00d71f97cce091f54b67d",
+            .hash = "shader_compiler-1.1.0-bOVsapm7AAAvmtrl9EqF9nzBxUHvk67vGktjXCb5JrLM",
         },
         .zex = .{
-            .url = "git+https://github.com/Games-By-Mason/Zex#ddedc82b1e8505c7ff3c96cc997b461302c15291",
-            .hash = "zex-0.1.0-BXO6OmtfAwDsYxfRLqHiI0avTCVM644uYCzoLY-Flykc",
+            .url = "git+https://github.com/Games-by-Mason/Zex#ca08d816f13205be1c969fd0b223cfa5b27ae423",
+            .hash = "zex-0.1.0-BXO6OhlfAwBRQPx9o45I0aCxU_vFRAJb9hnZneiCo9nJ",
         },
         .FontAtlas = .{
             .url = "git+https://codeberg.org/Games-by-Mason/FontAtlas.git#d3ff49aaa749609895f195d5d3d6c6f937563240",
